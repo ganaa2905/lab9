@@ -1,0 +1,440 @@
+/**
+ * Warehouse Management System Class Definitions
+ */
+
+import java.util.*;
+
+class Product {
+    private String id;
+    private String name;
+    private String description;
+    private double unitPrice;
+
+    public Product(String id, String name, String description, double unitPrice) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.unitPrice = unitPrice;
+    }
+
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+
+    public double getUnitPrice() { return unitPrice; }
+    public void setUnitPrice(double unitPrice) { this.unitPrice = unitPrice; }
+}
+
+class Warehouse {
+    private String id;
+    private String name;
+    private String location;
+    private StoreKeeper storeKeeper;
+    private Map<Product, Integer> inventory;
+
+    public Warehouse(String id, String name, String location) {
+        this.id = id;
+        this.name = name;
+        this.location = location;
+        this.inventory = new HashMap<>();
+    }
+
+    public void assignStoreKeeper(StoreKeeper storeKeeper) {
+        this.storeKeeper = storeKeeper;
+    }
+
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public String getLocation() { return location; }
+    public void setLocation(String location) { this.location = location; }
+
+    public StoreKeeper getStoreKeeper() { return storeKeeper; }
+    public void setStoreKeeper(StoreKeeper storeKeeper) { this.storeKeeper = storeKeeper; }
+
+    public Map<Product, Integer> getInventory() { return inventory; }
+}
+
+class StoreKeeper {
+    private String id;
+    private String name;
+    private Warehouse warehouse;
+
+    public StoreKeeper(String id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    public void assignWarehouse(Warehouse warehouse) {
+        this.warehouse = warehouse;
+    }
+
+    public ReceiptVoucher createReceiptVoucher(String supplier, List<ProductQuantity> productQuantities, Date date) {
+        return new ReceiptVoucher(UUID.randomUUID().toString(), date, supplier);
+    }
+
+    public IssueVoucher createIssueVoucher(String receiver, List<ProductQuantity> productQuantities, Date date) {
+        return new IssueVoucher(UUID.randomUUID().toString(), date, receiver);
+    }
+
+    public InventoryReport generateInventoryReport(Date startDate, Date endDate) {
+        return new InventoryReport(startDate, endDate);
+    }
+
+    public InventoryReport generateInventoryReportForProducts(Date startDate, Date endDate, List<Product> products) {
+        return new InventoryReport(startDate, endDate);
+    }
+
+    public InventoryCount performInventoryCount(Product product, int actualQuantity, Date countDate) {
+        // Get expected quantity from warehouse inventory
+        Integer expectedQuantity = warehouse.getInventory().getOrDefault(product, 0);
+        return new InventoryCount(UUID.randomUUID().toString(), product, expectedQuantity, actualQuantity, countDate);
+    }
+
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public Warehouse getWarehouse() { return warehouse; }
+    public void setWarehouse(Warehouse warehouse) { this.warehouse = warehouse; }
+}
+
+class ProductQuantity {
+    private Product product;
+    private int quantity;
+
+    public ProductQuantity(Product product, int quantity) {
+        this.product = product;
+        this.quantity = quantity;
+    }
+
+    public Product getProduct() { return product; }
+    public void setProduct(Product product) { this.product = product; }
+
+    public int getQuantity() { return quantity; }
+    public void setQuantity(int quantity) { this.quantity = quantity; }
+}
+
+abstract class Voucher {
+    private String id;
+    private Date date;
+    private List<ProductQuantity> productQuantities;
+
+    public Voucher(String id, Date date) {
+        this.id = id;
+        this.date = date;
+        this.productQuantities = new ArrayList<>();
+    }
+
+    public void addProductQuantity(ProductQuantity productQuantity) {
+        this.productQuantities.add(productQuantity);
+    }
+
+    public void print() {}
+
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+
+    public Date getDate() { return date; }
+    public void setDate(Date date) { this.date = date; }
+
+    public List<ProductQuantity> getProductQuantities() { return productQuantities; }
+}
+
+class ReceiptVoucher extends Voucher {
+    private String supplier;
+
+    public ReceiptVoucher(String id, Date date, String supplier) {
+        super(id, date);
+        this.supplier = supplier;
+    }
+
+    @Override
+    public void print() {}
+
+    public String getSupplier() { return supplier; }
+    public void setSupplier(String supplier) { this.supplier = supplier; }
+}
+
+class IssueVoucher extends Voucher {
+    private String receiver;
+
+    public IssueVoucher(String id, Date date, String receiver) {
+        super(id, date);
+        this.receiver = receiver;
+    }
+
+    @Override
+    public void print() {}
+
+    public String getReceiver() { return receiver; }
+    public void setReceiver(String receiver) { this.receiver = receiver; }
+}
+
+class InventoryReport {
+    private Date startDate;
+    private Date endDate;
+    private List<ProductInventoryData> productDataList;
+
+    public InventoryReport(Date startDate, Date endDate) {
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.productDataList = new ArrayList<>();
+    }
+
+    public void addProductData(ProductInventoryData productData) {
+        this.productDataList.add(productData);
+    }
+
+    public void print() {}
+
+    public Date getStartDate() { return startDate; }
+    public void setStartDate(Date startDate) { this.startDate = startDate; }
+
+    public Date getEndDate() { return endDate; }
+    public void setEndDate(Date endDate) { this.endDate = endDate; }
+
+    public List<ProductInventoryData> getProductDataList() { return productDataList; }
+}
+
+class ProductInventoryData {
+    private Product product;
+    private int beginningBalance;
+    private int totalReceipts;
+    private int totalIssues;
+    private int endingBalance;
+
+    public ProductInventoryData(Product product, int beginningBalance, int totalReceipts, int totalIssues) {
+        this.product = product;
+        this.beginningBalance = beginningBalance;
+        this.totalReceipts = totalReceipts;
+        this.totalIssues = totalIssues;
+        this.endingBalance = calculateEndingBalance();
+    }
+
+    public int calculateEndingBalance() {
+        return beginningBalance + totalReceipts - totalIssues;
+    }
+
+    public Product getProduct() { return product; }
+    public void setProduct(Product product) { this.product = product; }
+
+    public int getBeginningBalance() { return beginningBalance; }
+    public void setBeginningBalance(int beginningBalance) { this.beginningBalance = beginningBalance; }
+
+    public int getTotalReceipts() { return totalReceipts; }
+    public void setTotalReceipts(int totalReceipts) { this.totalReceipts = totalReceipts; }
+
+    public int getTotalIssues() { return totalIssues; }
+    public void setTotalIssues(int totalIssues) { this.totalIssues = totalIssues; }
+
+    public int getEndingBalance() { return endingBalance; }
+    public void setEndingBalance(int endingBalance) { this.endingBalance = endingBalance; }
+}
+
+class InventoryCount {
+    private String id;
+    private Product product;
+    private int expectedQuantity;
+    private int actualQuantity;
+    private int difference;
+    private Date countDate;
+
+    public InventoryCount(String id, Product product, int expectedQuantity, int actualQuantity, Date countDate) {
+        this.id = id;
+        this.product = product;
+        this.expectedQuantity = expectedQuantity;
+        this.actualQuantity = actualQuantity;
+        this.countDate = countDate;
+        this.difference = calculateDifference();
+    }
+
+    public int calculateDifference() {
+        return actualQuantity - expectedQuantity;
+    }
+
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+
+    public Product getProduct() { return product; }
+    public void setProduct(Product product) { this.product = product; }
+
+    public int getExpectedQuantity() { return expectedQuantity; }
+    public void setExpectedQuantity(int expectedQuantity) { this.expectedQuantity = expectedQuantity; }
+
+    public int getActualQuantity() { return actualQuantity; }
+    public void setActualQuantity(int actualQuantity) { this.actualQuantity = actualQuantity; }
+
+    public int getDifference() { return difference; }
+    public void setDifference(int difference) { this.difference = difference; }
+
+    public Date getCountDate() { return countDate; }
+    public void setCountDate(Date countDate) { this.countDate = countDate; }
+}
+
+class WarehouseManagementSystem {
+    private List<Warehouse> warehouses;
+    private List<StoreKeeper> storeKeepers;
+    private List<Product> products;
+
+    public WarehouseManagementSystem() {
+        this.warehouses = new ArrayList<>();
+        this.storeKeepers = new ArrayList<>();
+        this.products = new ArrayList<>();
+    }
+
+    public void addWarehouse(Warehouse warehouse) {
+        this.warehouses.add(warehouse);
+    }
+
+    public void addStoreKeeper(StoreKeeper storeKeeper) {
+        this.storeKeepers.add(storeKeeper);
+    }
+
+    public void addProduct(Product product) {
+        this.products.add(product);
+    }
+
+    public List<Warehouse> getWarehouses() { return warehouses; }
+    public List<StoreKeeper> getStoreKeepers() { return storeKeepers; }
+    public List<Product> getProducts() { return products; }
+}
+
+// This should be the public class matching your filename
+public class Main {
+    public static void main(String[] args) {
+        System.out.println("Warehouse Management System is working!");
+
+        // Create a warehouse management system
+        WarehouseManagementSystem wms = new WarehouseManagementSystem();
+        
+        // Create products
+        Product mouse = new Product("P001", "Mouse", "Wireless mouse", 25.0);
+        Product keyboard = new Product("P002", "Keyboard", "Mechanical keyboard", 75.0);
+        Product monitor = new Product("P003", "Monitor", "24-inch LCD monitor", 150.0);
+        
+        // Add products to the system
+        wms.addProduct(mouse);
+        wms.addProduct(keyboard);
+        wms.addProduct(monitor);
+        
+        // Create a warehouse
+        Warehouse warehouse1 = new Warehouse("W001", "Main Warehouse", "Ulaanbaatar");
+        wms.addWarehouse(warehouse1);
+        
+        // Create a storekeeper
+        StoreKeeper storeKeeper1 = new StoreKeeper("SK001", "Bataa");
+        wms.addStoreKeeper(storeKeeper1);
+        
+        // Assign storekeeper to warehouse and vice versa
+        storeKeeper1.assignWarehouse(warehouse1);
+        warehouse1.assignStoreKeeper(storeKeeper1);
+        
+        // Add some inventory to the warehouse
+        warehouse1.getInventory().put(mouse, 20);
+        warehouse1.getInventory().put(keyboard, 15);
+        warehouse1.getInventory().put(monitor, 10);
+        
+        // Display current inventory
+        System.out.println("\nCurrent inventory in " + warehouse1.getName() + ":");
+        for (Map.Entry<Product, Integer> entry : warehouse1.getInventory().entrySet()) {
+            Product product = entry.getKey();
+            Integer quantity = entry.getValue();
+            System.out.println(product.getName() + ": " + quantity + " units");
+        }
+        
+        // Create a receipt voucher
+        List<ProductQuantity> receiptItems = new ArrayList<>();
+        receiptItems.add(new ProductQuantity(mouse, 5));
+        receiptItems.add(new ProductQuantity(keyboard, 3));
+        
+        ReceiptVoucher receiptVoucher = storeKeeper1.createReceiptVoucher(
+            "Supplier Company", receiptItems, new Date());
+        
+        for (ProductQuantity pq : receiptItems) {
+            receiptVoucher.addProductQuantity(pq);
+            // Update inventory
+            Product product = pq.getProduct();
+            int currentQuantity = warehouse1.getInventory().getOrDefault(product, 0);
+            warehouse1.getInventory().put(product, currentQuantity + pq.getQuantity());
+        }
+        
+        // Display updated inventory after receipt
+        System.out.println("\nInventory after receipt:");
+        for (Map.Entry<Product, Integer> entry : warehouse1.getInventory().entrySet()) {
+            Product product = entry.getKey();
+            Integer quantity = entry.getValue();
+            System.out.println(product.getName() + ": " + quantity + " units");
+        }
+        
+        // Create an issue voucher
+        List<ProductQuantity> issueItems = new ArrayList<>();
+        issueItems.add(new ProductQuantity(mouse, 2));
+        issueItems.add(new ProductQuantity(monitor, 1));
+        
+        IssueVoucher issueVoucher = storeKeeper1.createIssueVoucher(
+            "IT Department", issueItems, new Date());
+        
+        for (ProductQuantity pq : issueItems) {
+            issueVoucher.addProductQuantity(pq);
+            // Update inventory
+            Product product = pq.getProduct();
+            int currentQuantity = warehouse1.getInventory().getOrDefault(product, 0);
+            warehouse1.getInventory().put(product, currentQuantity - pq.getQuantity());
+        }
+        
+        // Display updated inventory after issue
+        System.out.println("\nInventory after issue:");
+        for (Map.Entry<Product, Integer> entry : warehouse1.getInventory().entrySet()) {
+            Product product = entry.getKey();
+            Integer quantity = entry.getValue();
+            System.out.println(product.getName() + ": " + quantity + " units");
+        }
+        
+        // Perform inventory count for a product
+        InventoryCount mouseCount = storeKeeper1.performInventoryCount(mouse, 24, new Date());
+        System.out.println("\nInventory count for " + mouseCount.getProduct().getName() + ":");
+        System.out.println("Expected quantity: " + mouseCount.getExpectedQuantity());
+        System.out.println("Actual quantity: " + mouseCount.getActualQuantity());
+        System.out.println("Difference: " + mouseCount.getDifference());
+        
+        // Update inventory based on count result
+        warehouse1.getInventory().put(mouse, mouseCount.getActualQuantity());
+        
+        // Generate inventory report
+        InventoryReport report = storeKeeper1.generateInventoryReport(new Date(), new Date());
+        
+        // Add product data to the report
+        for (Map.Entry<Product, Integer> entry : warehouse1.getInventory().entrySet()) {
+            Product product = entry.getKey();
+            // Simulate beginning balance, receipts, and issues for demonstration
+            int beginningBalance = entry.getValue() - 5; // Just for example
+            int receipts = product == mouse || product == keyboard ? 5 : 0;
+            int issues = product == mouse || product == monitor ? (product == mouse ? 2 : 1) : 0;
+            
+            ProductInventoryData pid = new ProductInventoryData(
+                product, beginningBalance, receipts, issues);
+            report.addProductData(pid);
+        }
+        
+        // Display report data
+        System.out.println("\nInventory Report:");
+        for (ProductInventoryData pid : report.getProductDataList()) {
+            System.out.println(pid.getProduct().getName() + ":");
+            System.out.println("  Beginning Balance: " + pid.getBeginningBalance());
+            System.out.println("  Total Receipts: " + pid.getTotalReceipts());
+            System.out.println("  Total Issues: " + pid.getTotalIssues());
+            System.out.println("  Ending Balance: " + pid.getEndingBalance());
+        }
+    }
+}
